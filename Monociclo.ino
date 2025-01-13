@@ -14,7 +14,7 @@ angleControl pitchControl, rollControl;
 kalman pitch_angle, roll_angle;
 // Encoder var
 ESP32Encoder NIDEC1_ENC, NIDEC2_ENC;
-float Ts = 0.1, currentT = 0.0, previousT = 0.0;        // Elapsed time in loop() function
+float Ts = 0.1, currentT = 0.0, previousT = 0.0; // Elapsed time in loop() function
 
 // modo = 0, ambos motores
 // modo = 1, só motores de reação
@@ -22,10 +22,11 @@ float Ts = 0.1, currentT = 0.0, previousT = 0.0;        // Elapsed time in loop(
 int modo = 2;
 
 // put your setup code here, to run once:
-void setup() { 
+void setup()
+{
   // Inicializa comunicação
   Wire.begin();
-  Serial.begin(115200); 
+  Serial.begin(115200);
   // Setup motores
   motorInit(&motor1, 13, 5, 23, 19, 18, 1);
   motorSetup(&motor1);
@@ -46,58 +47,69 @@ void setup() {
   imuSetup();
   // Acende led para indicar período de estabilização
   pinMode(INTERNAL_LED, OUTPUT);
-  digitalWrite(INTERNAL_LED, HIGH);  // Turn on red led
-  delay(1000);                      // Wait for the system to stabilize
-  for (int i=1; i<= 400; i++){      // Wait for the Kalman filter stabilize
+  digitalWrite(INTERNAL_LED, HIGH);
+  // Espera estabilização do sistema
+  delay(1000);
+  // Aguarda estabilização da posição angular
+  for (int i = 1; i <= 400; i++)
+  {
     angleCalc(&rollControl, &pitchControl, &roll_angle, &pitch_angle, Ts);
     delay(5);
   }
-  digitalWrite(INTERNAL_LED, LOW);  
+  digitalWrite(INTERNAL_LED, LOW);
 }
 // put your main code here, to run repeatedly:
-void loop() {
+void loop()
+{
   currentT = millis();
-  if ((currentT - previousT)/1000.0 >= Ts) {
+  if ((currentT - previousT) / 1000.0 >= Ts)
+  {
     previousT = currentT;
-    
+
     angleCalc(&rollControl, &pitchControl, &roll_angle, &pitch_angle, Ts);
-    if (abs(roll_angle.U.angle) < 10 && abs(pitch_angle.U.angle) < 20){
+    if (abs(roll_angle.U.angle) < 10 && abs(pitch_angle.U.angle) < 20)
+    {
       // Controle Roll
-      if(modo == 0 || modo == 1){
+      if (modo == 0 || modo == 1)
+      {
         digitalWrite(motor1.brake, HIGH);
         digitalWrite(motor2.brake, HIGH);
-        
+
         int pwmX = executeControl(&rollControl, Ts);
         motorControl(&motor1, pwmX);
         motorControl(&motor2, -pwmX);
       }
       // Controle Pitch
-      if(modo == 0 || modo == 2){
+      if (modo == 0 || modo == 2)
+      {
         digitalWrite(motor3.brake, HIGH);
 
         int pwmY = executeControl(&pitchControl, Ts);
         motorControl(&motor3, pwmY);
       }
-    } 
-    else { 
-      digitalWrite(INTERNAL_LED,HIGH);  
+    }
+    else
+    {
+      digitalWrite(INTERNAL_LED, HIGH);
       motorControl(&motor1, 0); // stop reaction wheel
-      motorControl(&motor2, 0); // stop reaction wheel 
-      motorControl(&motor3, 0); // stop reaction wheel 
-      delay(5000);       // Tempo de aguardo
+      motorControl(&motor2, 0); // stop reaction wheel
+      motorControl(&motor3, 0); // stop reaction wheel
+      delay(5000);              // Tempo de aguardo
       digitalWrite(INTERNAL_LED, LOW);
-      for (int i=1; i<= 400; i++){ //Wait for the Kalman Filter stabilize
+      for (int i = 1; i <= 400; i++)
+      { // Wait for the Kalman Filter stabilize
         angleCalc(&rollControl, &pitchControl, &roll_angle, &pitch_angle, Ts);
         delay(5);
       }
       previousT = millis();
-      if(modo == 0 || modo == 1){
+      if (modo == 0 || modo == 1)
+      {
         resetControl(&rollControl);
       }
-      if(modo == 0 || modo == 2){
+      if (modo == 0 || modo == 2)
+      {
         resetControl(&pitchControl);
       }
     }
-  }   
-
+  }
 }

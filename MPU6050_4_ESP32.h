@@ -4,11 +4,10 @@
  *  João Vitor de M.G. Rosmaninho <jvrosmaninho@ufmg.br>
  *
  *  Version 1.0 - API with the following implemented functions:
- *  void LocationService_Init(UART_HandleTypeDef *huart, TIM_HandleTypeDef* htim);
- *  float LocationService_CalculateDistance(int rssi);
- *	location_t LocationService_GetLocation();
- *	uint8_t LocationService_IsInDestiny();
- *	float LocationService_GetArrivalAngle();
+ *  void imuSetup();
+ *  void angleCalc(angleControl *rollControl, angleControl *pitchControl, kalman *roll_angle, kalman *pitch_angle, float Ts);
+ *	void kalmanInit(kalman *kalmanFilter);
+ *	void executeKalman(angleControl *control, kalman *filter, float angle, float gyroAxis, float Ts);
  *
  *  Created on 2024
  *  Institution: UFMG
@@ -25,13 +24,15 @@
 #define MPU 0x68
 
 // Struct state
-typedef struct statesToControl {
+typedef struct statesToControl
+{
   float angle;
   float bias;
 } state;
 
 // Struct kalman
-typedef struct kalmanFilter {
+typedef struct kalmanFilter
+{
   state Q; // Error states
   float R_meas;
   state U; // States
@@ -42,9 +43,9 @@ typedef struct kalmanFilter {
 // Inicializa imu
 void imuSetup();
 // Calcula ângulos
-void angleCalc(angleControl *rollControl, angleControl *pitchControl, kalman * roll_angle, kalman *pitch_angle, float Ts);
+void angleCalc(angleControl *rollControl, angleControl *pitchControl, kalman *roll_angle, kalman *pitch_angle, float Ts);
 // Inicia estrutura de kalman
 void kalmanInit(kalman *kalmanFilter);
 // Realiza cálculo do ângulo por kalman
 void executeKalman(angleControl *control, kalman *filter, float angle, float gyroAxis, float Ts);
- #endif
+#endif

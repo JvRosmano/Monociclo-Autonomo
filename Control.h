@@ -4,16 +4,13 @@
  *  João Vitor de M.G. Rosmaninho <jvrosmaninho@ufmg.br>
  *
  *  Version 1.0 - API with the following implemented functions:
- *  void LocationService_Init(UART_HandleTypeDef *huart, TIM_HandleTypeDef* htim);
- *  float LocationService_CalculateDistance(int rssi);
- *	location_t LocationService_GetLocation();
- *	uint8_t LocationService_IsInDestiny();
- *	float LocationService_GetArrivalAngle();
+ *  void controlInit(angleControl *control, float K1, float K2, float K3, float K4, ESP32Encoder encoder);
+ *  void resetControl(angleControl *control);
+ *	int executeControl(angleControl *control, float Ts);
  *
  *  Created on 2024
  *  Institution: UFMG
- *  This API contains functions to use of some hardware resources
- *  from the MPU6050 Gyroscope/Accelerometer module.
+ *  This API contains functions to implement a control structure and a control law.
  */
 
 #ifndef CONTROL_H
@@ -21,8 +18,10 @@
 
 #include <ESP32Encoder.h>
 #include <Arduino.h>
+
 // Estrutura de controle
-typedef struct controlStructure {
+typedef struct controlStructure
+{
   float K1;
   float K2;
   float K3;

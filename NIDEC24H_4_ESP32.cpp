@@ -1,14 +1,13 @@
 /*
- *  NIDEC24H_4_ESP32.c
+ *  NIDEC24H_4_ESP32.cpp
  *
  *  João Vitor de M.G. Rosmaninho <jvrosmaninho@ufmg.br>
  *
  *  Version 1.0 - API with the following implemented functions:
- *  void LocationService_Init(UART_HandleTypeDef *huart, TIM_HandleTypeDef* htim);
- *  float LocationService_CalculateDistance(int rssi);
- *	location_t LocationService_GetLocation();
- *	uint8_t LocationService_IsInDestiny();
- *	float LocationService_GetArrivalAngle();
+ *  void motorInit(motor *motorToInit, int enc_a, int enc_b, int dir, int pwm, int brake, int pwm_ch);
+ *  void motorControl(motor *motorToControl, int pwm);
+ *	void motorSetup(motor *motorToSetup);
+ *	void encoderSetup(motor *motorToInit, angleControl *control);
  *
  *  Created on 2024
  *  Institution: UFMG
@@ -18,7 +17,8 @@
 
 #include "NIDEC24H_4_ESP32.h"
 
-void motorInit(motor *motorToInit, int enc_a, int enc_b, int dir, int pwm, int brake, int pwm_ch){
+void motorInit(motor *motorToInit, int enc_a, int enc_b, int dir, int pwm, int brake, int pwm_ch)
+{
   // Inicializa pinos do motor
   motorToInit->enc_a = enc_a;
   motorToInit->enc_b = enc_b;
@@ -28,19 +28,24 @@ void motorInit(motor *motorToInit, int enc_a, int enc_b, int dir, int pwm, int b
   motorToInit->pwm_ch = pwm_ch;
 };
 
-void motorControl(motor *motorToControl, int pwm){
+void motorControl(motor *motorToControl, int pwm)
+{
   // A depender do sinal, inverte a rotação
-  if (pwm < 0) {
+  if (pwm < 0)
+  {
     digitalWrite(motorToControl->dir, LOW);
     pwm = -pwm;
-  } else {
+  }
+  else
+  {
     digitalWrite(motorToControl->dir, HIGH);
   }
   // Escreve no pwm
   ledcWrite(motorToControl->pwm_ch, int(pwm > 255 ? 255 : 255 - pwm));
 };
 
-void motorSetup(motor *motorToSetup){
+void motorSetup(motor *motorToSetup)
+{
   // Inicializa pinos e associa canais
   pinMode(motorToSetup->brake, OUTPUT);
   digitalWrite(motorToSetup->brake, HIGH);
@@ -51,8 +56,9 @@ void motorSetup(motor *motorToSetup){
   motorControl(motorToSetup, 0);
 };
 
-void encoderSetup(motor *motorToInit, angleControl *control){
+void encoderSetup(motor *motorToInit, angleControl *control)
+{
   ESP32Encoder::useInternalWeakPullResistors = puType::up;
-	control->encoder.attachFullQuad(motorToInit->enc_b, motorToInit->enc_a);
+  control->encoder.attachFullQuad(motorToInit->enc_b, motorToInit->enc_a);
   control->encoder.clearCount();
 }
